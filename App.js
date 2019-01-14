@@ -15,7 +15,7 @@ export default class App extends React.Component {
   async fetchWithPage(page) {
     const apiUrl = "https://api.tumblr.com/v2/blog/itzahann/posts/photo";
     const apiKey = "ffisiufJDXX82i1zdHHu8KCsL1aS42VqMo12wJO3ZWl8N5kc5f&limit=4";
-    const response = await fetch('${apiUrl}?api_key=${apiKey}');
+    const response = await fetch('${apiUrl}?api_key=${apiKey}&offset={page*4}');
     const data = await response.json();
     this.setState({
       posts: data.response.posts,
