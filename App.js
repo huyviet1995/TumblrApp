@@ -1,82 +1,92 @@
-import React from 'react';
-import {FlatList,StyleSheet, Text, View} from 'react-native';
+import React, {Component} from 'react';
+import {Image, StyleSheet, Text, View} from 'react-native';
 import TEST_DATA from "./data.json";
+import {createStackNavigator, createAppContainer} from 'react-navigation';
+import {TumbrlList} from './TumbrlList';
+import {TumbrlPostDetails} from './TumbrlPostDetails';
 
+const Routes = createAppContainer(createStackNavigator({
+  TumbrlList: {
+    screen: TumbrlList,
+    navigationOptions: {
+      title: "Welcome to my Gallery!",
+    }
+  },
+  TumbrlPostDetails: {
+    screen: TumbrlPostDetails,
+    navigationOptions: ({navigation}) => ({
+      title: `${navigation.state.params.summary}`,
+    })
+  }
+}));
 export default class App extends React.Component {
-  constructor() {
-    super();
+
+  constructor(props) {
+    super(props);
     this.state = {
-      loading: false
+      posts: [],
+      loading: false,
+      page: 0,
     };
+    this.loadMore = this.loadMore.bind(this);
   }
 
-  async componentDidMount() {
+  loadMore = async () => {
+    const newPage = this.state.page + 1;
+    await this.fetchWithPage(newPage);
+    this.setState({
+      page: newPage,
+    })
+  }
+
+  fetchWithPage = async (page) => {
     this.setState({
       loading: true,
     });
 
-    const apiUrl = "https://api.tumblr.com/v2/blog/itzahann/posts/photo";
+    const apiUrl = "https://api.tumblr.com/v2/blog/itzahann/posts/photo/";
     const apiKey = "ffisiufJDXX82i1zdHHu8KCsL1aS42VqMo12wJO3ZWl8N5kc5f&limit=4";
     try {
-      const response = await fetch(`${apiUrl}?api_key=${apiKey}`);
+      const response = await fetch(`${apiUrl}?api_key=${apiKey}&offset=${page*100}`);
       const data = await response.json();
-      console.log("The application is running successfully!");
       this.setState({
         posts: data.response.posts,
         loading: false,
       });
-      console.log(this.state.posts[0].trail[0].blog.theme.header_image);
     } catch(error) {
       this.setState({
+        // If one does not fetch data correctly from server!
         posts: TEST_DATA.response.posts,
         loading: false,
       });
     }
   }
 
-  render() {
-    return (
-      <View style={styles.container}>
-        <TumbrlPost post = {this.state.posts[0]} />
-      </View>
-    );
+  async componentDidMount() {
+    this.fetchWithPage(0);
   }
-}
-class TumbrlList extends React.Component {
+
   render() {
-    return (
-      <FlatList
-        data = {this.props.posts}
-        keyExtractor = {(post) => post.id}
-        renderItem = {(postItem) => {<TumbrlPost post = {postItem[0]}/>}}
-      /> 
-    )
+      return (
+          <Routes style = {styles.container}
+            screenProps = {{
+              posts: this.state.posts,
+              loadMore: this.loadMore,
+              loading : this.loading,
+            }}>
+          </Routes>
+      );
   }
 }
 
-
-class TumbrlPost extends React.Component {
-  render() {
-    const img = {uri: this.props.post.trail[0].blog.theme.header_image};
-    return (
-      <View>
-        <Image
-          source = {{uri: this.img.uri}}
-          style = {{width: 50, height: 50}}
-        />
-      </View>
-    )
-  }
-}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
+    backgroundColor: 'white',
     justifyContent: 'center',
-    height: 400,
-    width: 400,
+    width: "100%",
+    height: "100%",
     color: 'red'
   }
 });

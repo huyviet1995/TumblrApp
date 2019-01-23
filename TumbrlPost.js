@@ -1,11 +1,16 @@
-import React from 'react';
-import StyleSheet from 'react-native';
-
-class TumbrlPost extends React.Component {
+import React,{Componenet} from 'react';
+import {TouchableHighlight, StyleSheet, Text, View,Image} from 'react-native';
+export class TumbrlPost extends React.Component {
   render() {
-    const img = {uri: this.props.post.trail[0].blog.theme.header_image};
     return (
-      <View style = {[styles.color.red, styles.container.height, styles.container.width]}></View>
+      <TouchableHighlight onPress ={() => {this.props.loadDetails}} >
+        <View style = {styles.container}>
+          <Image
+            source = {{uri: this.props.post.trail[0].blog.theme.header_image}}
+            style = {styles.image}
+          />
+        </View>
+      </TouchableHighlight>
     )
   }
 }
@@ -16,8 +21,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
-    height: 400,
-    width: 400,
     color: 'red'
+  },
+  image: {
+    width: 300,
+    height: 400,
   }
 });
